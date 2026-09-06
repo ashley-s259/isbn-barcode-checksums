@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "checkdigit"
+version = "0.1.0"
+description = "Checksum validation and generation for ISBN and common retail barcodes"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "ashley-s259" }]
+
+[tool.setuptools.packages.find]
+where = ["src"]
