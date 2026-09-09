@@ -76,6 +76,13 @@ with open("raw_feed.txt") as f:
 - `is_valid(code)` picks the format by cleaned length (10/12/13
   digits) when the caller doesn't know or care which it is
 
+## Running the tests
+
+```
+pip install -e .
+python -m unittest discover -s tests
+```
+
 ## License
 
 MIT, see LICENSE.
