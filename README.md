@@ -72,9 +72,14 @@ with open("raw_feed.txt") as f:
 - ISBN-10 (`isbn10_check_digit`, `isbn10_is_valid`)
 - ISBN-13 / EAN-13 (`isbn13_check_digit`, `isbn13_is_valid`, and the
   `ean13_*` names, which are the same functions)
+- EAN-8 (`ean8_check_digit`, `ean8_is_valid`)
+- ISSN (`issn_check_digit`, `issn_is_valid`)
 - UPC-A (`upca_check_digit`, `upca_is_valid`)
 - `is_valid(code)` picks the format by cleaned length (10/12/13
-  digits) when the caller doesn't know or care which it is
+  digits) when the caller doesn't know or care which it is. EAN-8 and
+  ISSN are both 8 digits with different arithmetic, so they aren't
+  part of this auto-detection; call `ean8_is_valid` or `issn_is_valid`
+  directly.
 
 ## Running the tests
 

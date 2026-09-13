@@ -1,6 +1,8 @@
 import unittest
 
 from checkdigit.checksum import (
+    ean8_check_digit,
+    ean8_is_valid,
     ean13_check_digit,
     ean13_is_valid,
     is_valid,
@@ -8,6 +10,8 @@ from checkdigit.checksum import (
     isbn10_is_valid,
     isbn13_check_digit,
     isbn13_is_valid,
+    issn_check_digit,
+    issn_is_valid,
     upca_check_digit,
     upca_is_valid,
 )
@@ -102,6 +106,69 @@ class UpcATest(unittest.TestCase):
         self.assertFalse(upca_is_valid("03600029145"))
 
 
+class Ean8Test(unittest.TestCase):
+    def test_check_digit(self):
+        self.assertEqual(ean8_check_digit("4017072"), "5")
+
+    def test_check_digit_rejects_wrong_length(self):
+        with self.assertRaises(ValueError):
+            ean8_check_digit("401707")
+
+    def test_check_digit_rejects_non_digits(self):
+        with self.assertRaises(ValueError):
+            ean8_check_digit("401707X")
+
+    def test_is_valid_plain(self):
+        self.assertTrue(ean8_is_valid("40170725"))
+        self.assertTrue(ean8_is_valid("96385074"))
+
+    def test_is_valid_with_separators(self):
+        self.assertTrue(ean8_is_valid("4017-0725"))
+
+    def test_is_valid_wrong_check_digit(self):
+        self.assertFalse(ean8_is_valid("40170726"))
+
+    def test_is_valid_wrong_length(self):
+        self.assertFalse(ean8_is_valid("4017072"))
+        self.assertFalse(ean8_is_valid("401707255"))
+
+
+class IssnTest(unittest.TestCase):
+    def test_check_digit_numeric(self):
+        self.assertEqual(issn_check_digit("0378595"), "5")
+
+    def test_check_digit_x(self):
+        self.assertEqual(issn_check_digit("1050124"), "X")
+
+    def test_check_digit_rejects_wrong_length(self):
+        with self.assertRaises(ValueError):
+            issn_check_digit("037859")
+
+    def test_check_digit_rejects_non_digits(self):
+        with self.assertRaises(ValueError):
+            issn_check_digit("037859X")
+
+    def test_is_valid_plain(self):
+        self.assertTrue(issn_is_valid("03785955"))
+
+    def test_is_valid_with_separator(self):
+        self.assertTrue(issn_is_valid("0378-5955"))
+
+    def test_is_valid_x_check_digit(self):
+        self.assertTrue(issn_is_valid("1050-124X"))
+        self.assertTrue(issn_is_valid("1050-124x"))
+
+    def test_is_valid_wrong_check_digit(self):
+        self.assertFalse(issn_is_valid("03785956"))
+
+    def test_is_valid_wrong_length(self):
+        self.assertFalse(issn_is_valid("0378595"))
+        self.assertFalse(issn_is_valid("037859555"))
+
+    def test_is_valid_bad_trailing_character(self):
+        self.assertFalse(issn_is_valid("0378595Y"))
+
+
 class DispatchIsValidTest(unittest.TestCase):
     def test_dispatches_isbn10(self):
         self.assertTrue(is_valid("0-306-40615-2"))
@@ -114,6 +181,11 @@ class DispatchIsValidTest(unittest.TestCase):
 
     def test_unknown_length_is_false(self):
         self.assertFalse(is_valid("123"))
+
+    def test_eight_digits_not_dispatched(self):
+        # EAN-8 and ISSN are both 8 digits and use different arithmetic,
+        # so is_valid deliberately doesn't guess between them.
+        self.assertFalse(is_valid("40170725"))
 
     def test_empty_string_is_false(self):
         self.assertFalse(is_valid(""))

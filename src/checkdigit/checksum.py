@@ -1,4 +1,4 @@
-"""Check-digit math for ISBN-10, ISBN-13/EAN-13, and UPC-A.
+"""Check-digit math for ISBN-10, ISBN-13/EAN-13, EAN-8, ISSN, and UPC-A.
 
 Everything here takes and returns plain strings. No exceptions get
 raised for "this looks invalid" - that's what the is_valid functions
@@ -62,6 +62,40 @@ isbn13_check_digit = ean13_check_digit
 isbn13_is_valid = ean13_is_valid
 
 
+def ean8_check_digit(prefix: str) -> str:
+    if len(prefix) != 7 or not prefix.isdigit():
+        raise ValueError("EAN-8 prefix must be exactly 7 digits")
+    total = _alternating_sum(prefix, first_weight=3)
+    return str((10 - total % 10) % 10)
+
+
+def ean8_is_valid(code: str) -> bool:
+    cleaned = _clean(code)
+    if len(cleaned) != 8 or not cleaned.isdigit():
+        return False
+    return _alternating_sum(cleaned, first_weight=3) % 10 == 0
+
+
+def issn_check_digit(prefix: str) -> str:
+    if len(prefix) != 7 or not prefix.isdigit():
+        raise ValueError("ISSN prefix must be exactly 7 digits")
+    total = sum((8 - i) * int(d) for i, d in enumerate(prefix))
+    remainder = (11 - total % 11) % 11
+    return "X" if remainder == 10 else str(remainder)
+
+
+def issn_is_valid(code: str) -> bool:
+    cleaned = _clean(code)
+    if len(cleaned) != 8 or not cleaned[:7].isdigit():
+        return False
+    last = cleaned[7]
+    if last not in "0123456789Xx":
+        return False
+    total = sum((8 - i) * int(d) for i, d in enumerate(cleaned[:7]))
+    total += 10 if last in "Xx" else int(last)
+    return total % 11 == 0
+
+
 def upca_check_digit(prefix: str) -> str:
     if len(prefix) != 11 or not prefix.isdigit():
         raise ValueError("UPC-A prefix must be exactly 11 digits")
@@ -77,7 +111,12 @@ def upca_is_valid(code: str) -> bool:
 
 
 def is_valid(code: str) -> bool:
-    """Validate a code whose type isn't known ahead of time, by length."""
+    """Validate a code whose type isn't known ahead of time, by length.
+
+    EAN-8 and ISSN are both 8 digits and use different arithmetic, so
+    there's no length to dispatch on for them here; call
+    ean8_is_valid or issn_is_valid directly.
+    """
     cleaned = _clean(code)
     if len(cleaned) == 10:
         return isbn10_is_valid(cleaned)
