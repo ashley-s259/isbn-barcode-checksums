@@ -8,8 +8,10 @@ from checkdigit.checksum import (
     is_valid,
     isbn10_check_digit,
     isbn10_is_valid,
+    isbn10_to_isbn13,
     isbn13_check_digit,
     isbn13_is_valid,
+    isbn13_to_isbn10,
     issn_check_digit,
     issn_is_valid,
     upca_check_digit,
@@ -86,6 +88,32 @@ class Ean13Isbn13Test(unittest.TestCase):
 
     def test_is_valid_wrong_length(self):
         self.assertFalse(ean13_is_valid("978030640615"))
+
+
+class IsbnConversionTest(unittest.TestCase):
+    def test_isbn10_to_isbn13(self):
+        self.assertEqual(isbn10_to_isbn13("0-306-40615-2"), "9780306406157")
+
+    def test_isbn10_to_isbn13_rejects_invalid_input(self):
+        with self.assertRaises(ValueError):
+            isbn10_to_isbn13("0-306-40615-3")
+
+    def test_isbn13_to_isbn10(self):
+        self.assertEqual(isbn13_to_isbn10("978-0-306-40615-7"), "0306406152")
+
+    def test_isbn13_to_isbn10_rejects_invalid_input(self):
+        with self.assertRaises(ValueError):
+            isbn13_to_isbn10("978-0-306-40615-8")
+
+    def test_isbn13_to_isbn10_rejects_979_prefix(self):
+        # 979 is valid EAN-13/ISBN-13 but never had an ISBN-10 form.
+        self.assertTrue(ean13_is_valid("9790306406156"))
+        with self.assertRaises(ValueError):
+            isbn13_to_isbn10("979-0-306-40615-6")
+
+    def test_round_trip(self):
+        isbn13 = isbn10_to_isbn13("0306406152")
+        self.assertEqual(isbn13_to_isbn10(isbn13), "0306406152")
 
 
 class UpcATest(unittest.TestCase):

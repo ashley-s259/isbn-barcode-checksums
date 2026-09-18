@@ -36,6 +36,20 @@ from checkdigit import isbn13_check_digit
 isbn13_check_digit("978030640615")  # "7"
 ```
 
+Converting between ISBN-10 and ISBN-13:
+
+```python
+from checkdigit import isbn10_to_isbn13, isbn13_to_isbn10
+
+isbn10_to_isbn13("0-306-40615-2")      # "9780306406157"
+isbn13_to_isbn10("978-0-306-40615-7")  # "0306406152"
+```
+
+Both raise `ValueError` if the input isn't a valid code of the
+expected type. `isbn13_to_isbn10` also raises for 979-prefixed
+ISBN-13s, since that range was assigned after ISBN-10 was retired and
+never had a 10-digit form.
+
 ## Validating a large file
 
 The point of `streaming.py` is that none of these functions need the
@@ -72,6 +86,7 @@ with open("raw_feed.txt") as f:
 - ISBN-10 (`isbn10_check_digit`, `isbn10_is_valid`)
 - ISBN-13 / EAN-13 (`isbn13_check_digit`, `isbn13_is_valid`, and the
   `ean13_*` names, which are the same functions)
+- `isbn10_to_isbn13` / `isbn13_to_isbn10` convert between the two
 - EAN-8 (`ean8_check_digit`, `ean8_is_valid`)
 - ISSN (`issn_check_digit`, `issn_is_valid`)
 - UPC-A (`upca_check_digit`, `upca_is_valid`)

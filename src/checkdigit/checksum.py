@@ -110,6 +110,36 @@ def upca_is_valid(code: str) -> bool:
     return _alternating_sum(cleaned, first_weight=3) % 10 == 0
 
 
+def isbn10_to_isbn13(isbn10: str) -> str:
+    """Convert an ISBN-10 to its ISBN-13 form.
+
+    ISBN-13 is just an ISBN-10 with the Bookland prefix 978 stuck on
+    the front and the check digit recomputed for the new, longer
+    number - the first nine digits carry the same meaning either way.
+    """
+    cleaned = _clean(isbn10)
+    if not isbn10_is_valid(cleaned):
+        raise ValueError("not a valid ISBN-10")
+    core = "978" + cleaned[:9]
+    return core + ean13_check_digit(core)
+
+
+def isbn13_to_isbn10(isbn13: str) -> str:
+    """Convert a 978-prefixed ISBN-13 back to ISBN-10.
+
+    Only the 978 range predates ISBN-13 and has a 10-digit equivalent;
+    979 was assigned after ISBN-10 was retired, so those codes have no
+    ISBN-10 form to convert to.
+    """
+    cleaned = _clean(isbn13)
+    if not ean13_is_valid(cleaned):
+        raise ValueError("not a valid ISBN-13")
+    if not cleaned.startswith("978"):
+        raise ValueError("only 978-prefixed ISBN-13s have an ISBN-10 form")
+    core = cleaned[3:12]
+    return core + isbn10_check_digit(core)
+
+
 def is_valid(code: str) -> bool:
     """Validate a code whose type isn't known ahead of time, by length.
 
