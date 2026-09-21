@@ -38,6 +38,22 @@ class IterValidateTest(unittest.TestCase):
         self.assertEqual(len(results), 2)
         self.assertTrue(all(ok for _, _, ok in results))
 
+    def test_consumes_a_binary_file_object(self):
+        stream = io.BytesIO(b"0-306-40615-2\n036000291452\n")
+        results = list(iter_validate(stream))
+        self.assertEqual(
+            results,
+            [(1, "0-306-40615-2", True), (2, "036000291452", True)],
+        )
+
+    def test_bytes_lines_from_a_plain_iterable(self):
+        lines = [b"0-306-40615-2", b"0-306-40615-3"]
+        results = list(iter_validate(lines))
+        self.assertEqual(
+            results,
+            [(1, "0-306-40615-2", True), (2, "0-306-40615-3", False)],
+        )
+
 
 class IterFixedWidthRecordsTest(unittest.TestCase):
     def test_splits_evenly_sized_stream(self):
@@ -67,6 +83,11 @@ class IterFixedWidthRecordsTest(unittest.TestCase):
     def test_empty_stream_yields_nothing(self):
         records = list(iter_fixed_width_records(io.StringIO(""), width=10))
         self.assertEqual(records, [])
+
+    def test_splits_a_binary_stream(self):
+        stream = io.BytesIO(b"036000291452" b"978030640615")
+        records = list(iter_fixed_width_records(stream, width=12, chunk_size=5))
+        self.assertEqual(records, ["036000291452", "978030640615"])
 
 
 class CountInvalidTest(unittest.TestCase):

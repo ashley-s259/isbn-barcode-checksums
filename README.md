@@ -67,6 +67,11 @@ with open("codes.txt") as f:
             print(f"line {line_number}: bad check digit: {code}")
 ```
 
+Both `iter_validate` and `iter_fixed_width_records` also accept a
+binary-mode stream (lines or chunks of `bytes` instead of `str`),
+decoded as utf-8 - useful when the source is a socket or an archive
+member opened without knowing the encoding up front.
+
 Some barcode feeds have no delimiters at all, just a continuous run
 of digits. `iter_fixed_width_records` handles that case by reading
 the stream in fixed-size chunks and only ever keeping a small rolling
